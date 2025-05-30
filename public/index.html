@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Modbus Timeout Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+      margin-top: 16px;
+      color: #34495e;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    .result {
+      margin-top: 30px;
+      padding: 15px;
+      background: #ecf0f1;
+      border-left: 5px solid #3498db;
+      border-radius: 6px;
+      color: #2c3e50;
+      white-space: pre-line;
+      font-size: 15px;
+    }
+
+    .label-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 5px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Modbus Timeout Calculator</h2>
+
+    <form id="calcForm">
+      <label>Protocol:</label>
+      <select id="protocol">
+        <option value="RTU">Modbus RTU</option>
+        <option value="TCP">Modbus TCP</option>
+      </select>
+
+      <label>Pull Rate (วินาที):</label>
+      <input type="number" id="pullRate" value="5">
+
+      <label>Baudrate (เฉพาะ RTU):</label>
+      <input type="number" id="baudrate" value="9600">
+
+      <label>จำนวน Register:</label>
+      <input type="number" id="registers" value="10">
+
+      <button type="submit">คำนวณ</button>
+    </form>
+
+    <div id="result" class="result" style="display:none;"></div>
+  </div>
+
+  <script>
+    document.getElementById("calcForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const data = {
+        protocol: document.getElementById("protocol").value,
+        pullRate: parseFloat(document.getElementById("pullRate").value),
+        baudrate: parseInt(document.getElementById("baudrate").value),
+        registers: parseInt(document.getElementById("registers").value),
+      };
+
+      const response = await fetch("/calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+      document.getElementById("result").style.display = "block";
+      document.getElementById("result").textContent =
+        `Protocol: ${result.protocol}\n` +
+        `Response Time: ${result.responseTimeMs} ms\n` +
+        `Recommended Timeout: ${result.recommendedTimeoutMs} ms\n` +
+        `Reconnect Timeout: ${result.recommendedReconnectTimeoutSec} sec`;
+    });
+  </script>
+</body>
+</html>
